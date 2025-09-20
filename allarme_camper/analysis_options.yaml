@@ -1,0 +1,23 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    unused_import: warning
+    unused_local_variable: warning
+    dead_code: warning
+
+linter:
+  rules:
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    avoid_print: true
+    always_use_package_imports: true
+    prefer_final_locals: true
+    unnecessary_new: true
+    unnecessary_this: true
+    avoid_unused_constructor_parameters: true
+    no_leading_underscores_for_local_identifiers: true
+    use_key_in_widget_constructors: true
+    sized_box_for_whitespace: true
+    use_full_hex_values_for_flutter_colors: true
+    curly_braces_in_flow_control_structures: true
