@@ -14,6 +14,27 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 - **Relay**: utilizzato per azionare una sirena di allarme
 - **LED RGB**: KY-016 FZ0455 Modulo LED RGB a 3 colori per la segnalazione visiva degli stati di allarme
 
+## Collegamenti hardware
+
+| Dispositivo                | Pin ESP32           | Funzione                      |
+|----------------------------|---------------------|-------------------------------|
+| Display LCD ST7789         | CS: GPIO15          | Chip Select                   |
+|                            | DC: GPIO2           | Data/Command                  |
+|                            | RST: GPIO4          | Reset                         |
+|                            | BL: GPIO32          | Backlight                     |
+| LED RGB (KY-016)           | R: GPIO12           | LED Rosso                     |
+|                            | G: GPIO13           | LED Verde                     |
+|                            | B: GPIO27           | LED Blu                       |
+| Relè sirena                | GPIO14              | Attivazione sirena/clacson    |
+| MPU6050 (I2C)              | SDA: GPIO21         | Comunicazione I2C             |
+|                            | SCL: GPIO22         | Comunicazione I2C             |
+
+**Note:**
+- Il LED RGB segnala lo stato (verde=disinserito, rosso=allarme, blu=stabilizzazione, bianco=test).
+- Il relè è attivo livello LOW (LOW=attivato, HIGH=disattivato).
+- Il display LCD ST7789 mostra messaggi di stato e allarme.
+- Il sensore MPU6050 rileva movimenti e intrusioni tramite accelerometro/giroscopio.
+
 ## Funzionalità principali
 
 - Rilevamento di movimenti e intrusioni tramite accelerometro/giroscopio
