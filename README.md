@@ -4,7 +4,35 @@ Sistema di allarme per camper basato su tecnologia Bluetooth.
 
 ## Descrizione
 
-Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuatori gestiti tramite comunicazione Bluetooth. Permette di monitorare lo stato dei sensori, ricevere notifiche di allarme e controllare alcune funzioni direttamente da un'app o da dispositivi remoti.
+Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuatori gestiti tramite comunicazione Bluetooth. Permette di monitorare lo stato dei sensori, ricevere notifiche di allarme e gestire lo stato tramite LED RGB e display.
+
+---
+
+## Novità: Telecomando a due canali (INPUT_PULLUP)
+
+Da questa versione è possibile **inserire e disinserire l’allarme tramite un telecomando a due canali** (RF, relè NO/COM).  
+La funzione sfrutta la modalità INPUT_PULLUP dell’ESP32:  
+**NON sono richieste resistenze esterne**, basta collegare:
+
+- NO (Normally Open) del relè → al pin ESP32 (33 per inserimento, 25 per disinserimento)
+- COM (Common) del relè → a GND ESP32
+
+### Schema di collegamento per telecomando
+
+```
+Relè CH1 NO ----> Pin 33 ESP32
+Relè CH1 COM ---> GND ESP32
+
+Relè CH2 NO ----> Pin 25 ESP32
+Relè CH2 COM ---> GND ESP32
+```
+
+Quando premi il tasto sul telecomando:
+- Il relè chiude il contatto tra NO e COM.
+- Il pin ESP32 corrispondente va LOW.
+- Il firmware inserisce o disinserisce l’allarme.
+
+---
 
 ## Componenti utilizzati
 
@@ -13,6 +41,7 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 - **Sensore di movimento/accelerazione**: MPU6050 Modulo Sensore Accelerometro Giroscopio a 6 Assi Convertitore AD a 16 Bit Uscita Dati Accessori Professionali
 - **Relay**: utilizzato per azionare una sirena di allarme
 - **LED RGB**: KY-016 FZ0455 Modulo LED RGB a 3 colori per la segnalazione visiva degli stati di allarme
+- **Telecomando RF a 2 canali**: opzionale, per inserimento/disinserimento rapido dell’allarme
 
 ## Collegamenti hardware
 
@@ -28,12 +57,17 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 | Relè sirena                | GPIO14              | Attivazione sirena/clacson    |
 | MPU6050 (I2C)              | SDA: GPIO21         | Comunicazione I2C             |
 |                            | SCL: GPIO22         | Comunicazione I2C             |
+| Telecomando 2 canali       | CH1 NO: GPIO33      | Inserimento allarme           |
+|                            | CH1 COM: GND        |                               |
+|                            | CH2 NO: GPIO25      | Disinserimento allarme        |
+|                            | CH2 COM: GND        |                               |
 
 **Note:**
 - Il LED RGB segnala lo stato (verde=disinserito, rosso=allarme, blu=stabilizzazione, bianco=test).
 - Il relè è attivo livello LOW (LOW=attivato, HIGH=disattivato).
 - Il display LCD ST7789 mostra messaggi di stato e allarme.
 - Il sensore MPU6050 rileva movimenti e intrusioni tramite accelerometro/giroscopio.
+- Il telecomando consente di inserire/disinserire l’allarme anche da remoto.
 
 ## Funzionalità principali
 
@@ -43,6 +77,7 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 - Notifica su dispositivi Bluetooth associati
 - Configurazione dei parametri di sicurezza
 - Log degli eventi di allarme
+- **Inserimento/disinserimento allarme da telecomando a 2 canali**
 
 ## Requisiti
 
@@ -52,6 +87,7 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 - LED RGB KY-016
 - Modulo Bluetooth integrato (ESP32)
 - Alimentazione 12V
+- **Telecomando a 2 canali** (opzionale)
 
 ## Installazione
 
@@ -69,6 +105,7 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 - Associa tramite Bluetooth il tuo smartphone o altro dispositivo
 - Monitora lo stato e ricevi notifiche di allarme
 - Osserva la segnalazione visiva tramite LED RGB
+- Inserisci/disinserisci l’allarme tramite telecomando RF a due canali (se collegato)
 
 ## Autore
 
