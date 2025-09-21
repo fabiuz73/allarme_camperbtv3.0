@@ -19,6 +19,11 @@ const int ledG = 13;   // Verde
 const int ledB = 27;   // Blu
 const int releClacson = 14;
 
+// Pin telecomando ricevitore 2 canali
+// COLLEGAMENTI: NO del relè ricevitore → pin ESP32, COM → GND ESP32 (senza resistenze esterne)
+const int telecomandoInserimento = 33;  // Canale A - Tasto per inserimento allarme  
+const int telecomandoDisinserimento = 25;  // Canale B - Tasto per disinserimento allarme
+
 // Soglia movimento (modificabile da Bluetooth)
 int sogliaMovimento = 1000;
 
@@ -71,6 +76,12 @@ void setup() {
   pinMode(ledG, OUTPUT);
   pinMode(ledB, OUTPUT);
   pinMode(releClacson, OUTPUT);
+  
+  // Configurazione pin telecomando come INPUT_PULLUP
+  // Il pin sarà HIGH quando il contatto NO è aperto, LOW quando è chiuso
+  pinMode(telecomandoInserimento, INPUT_PULLUP);
+  pinMode(telecomandoDisinserimento, INPUT_PULLUP);
+  
   setLedColor(0, 255, 0); // Allarme disinserito: verde acceso
 
   // MODIFICA: Relè disattivato all'accensione (HIGH su modulo attivo LOW)
@@ -105,6 +116,58 @@ void loop() {
       giaConnesso = false;
     }
   }
+
+  // --- CONTROLLO TELECOMANDO ---
+  // Lettura pin telecomando (LOW = contatto NO chiuso dal relè ricevitore)
+  static bool ultimoStatoInserimento = HIGH;
+  static bool ultimoStatoDisinserimento = HIGH;
+  static unsigned long ultimoDebounceInserimento = 0;
+  static unsigned long ultimoDebounceDisinserimento = 0;
+  const unsigned long debounceDelay = 50; // 50ms di debounce
+  
+  bool statoInserimento = digitalRead(telecomandoInserimento);
+  bool statoDisinserimento = digitalRead(telecomandoDisinserimento);
+  
+  // Debounce e rilevamento fronte di discesa (da HIGH a LOW) per inserimento
+  if (statoInserimento != ultimoStatoInserimento) {
+    ultimoDebounceInserimento = millis();
+  }
+  if ((millis() - ultimoDebounceInserimento) > debounceDelay) {
+    if (statoInserimento == LOW && ultimoStatoInserimento == HIGH && !allarmeInserito) {
+      // Comando inserimento allarme via telecomando
+      allarmeInserito = true;
+      allarmeAttivatoMillis = millis();
+      setLedColor(255, 0, 0); // ROSSO per allarme inserito
+      SerialBT.println("ALLARME INSERITO (Telecomando)");
+      Serial.println("Allarme inserito via telecomando. Stabilizzazione...");
+      showMessage("ALLARME INSERITO", ST77XX_RED);
+      stabilizzazioneScritta = false;
+      
+      // Reset variabili per auto-taratura
+      sommaX = 0; sommaY = 0; sommaZ = 0;
+      campioni = 0;
+      centriCalcolati = false;
+    }
+  }
+  ultimoStatoInserimento = statoInserimento;
+  
+  // Debounce e rilevamento fronte di discesa (da HIGH a LOW) per disinserimento
+  if (statoDisinserimento != ultimoStatoDisinserimento) {
+    ultimoDebounceDisinserimento = millis();
+  }
+  if ((millis() - ultimoDebounceDisinserimento) > debounceDelay) {
+    if (statoDisinserimento == LOW && ultimoStatoDisinserimento == HIGH && allarmeInserito) {
+      // Comando disinserimento allarme via telecomando
+      allarmeInserito = false;
+      setLedColor(0, 255, 0); // VERDE per allarme disinserito
+      digitalWrite(releClacson, HIGH); // Spegne il clacson
+      SerialBT.println("ALLARME DISINSERITO (Telecomando)");
+      Serial.println("Allarme disinserito via telecomando.");
+      showMessage("ALLARME DISINSERITO", ST77XX_GREEN);
+      stabilizzazioneScritta = false;
+    }
+  }
+  ultimoStatoDisinserimento = statoDisinserimento;
 
   // Ricezione comandi Bluetooth
   if (SerialBT.available()) {
