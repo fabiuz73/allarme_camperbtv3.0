@@ -28,12 +28,15 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 | Relè sirena                | GPIO14              | Attivazione sirena/clacson    |
 | MPU6050 (I2C)              | SDA: GPIO21         | Comunicazione I2C             |
 |                            | SCL: GPIO22         | Comunicazione I2C             |
+| Telecomando 2 canali       | GPIO33              | Canale A - Inserimento allarme |
+|                            | GPIO25              | Canale B - Disinserimento allarme |
 
 **Note:**
 - Il LED RGB segnala lo stato (verde=disinserito, rosso=allarme, blu=stabilizzazione, bianco=test).
 - Il relè è attivo livello LOW (LOW=attivato, HIGH=disattivato).
 - Il display LCD ST7789 mostra messaggi di stato e allarme.
 - Il sensore MPU6050 rileva movimenti e intrusioni tramite accelerometro/giroscopio.
+- **Telecomando**: collegare i contatti NO del ricevitore ai pin ESP32 (33 e 25), COM a GND. Non servono resistenze esterne grazie alla modalità INPUT_PULLUP.
 
 ## Funzionalità principali
 
@@ -41,6 +44,7 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 - Gestione di allarmi sonori tramite relay e sirena
 - Segnalazione visiva di stato e allarme tramite LED RGB
 - Notifica su dispositivi Bluetooth associati
+- **Controllo remoto tramite telecomando a 2 canali (inserimento/disinserimento)**
 - Configurazione dei parametri di sicurezza
 - Log degli eventi di allarme
 
@@ -50,6 +54,7 @@ Questo progetto nasce per proteggere il tuo camper, integrando sensori e attuato
 - Sensore MPU6050
 - Relay per sirena
 - LED RGB KY-016
+- Ricevitore telecomando a 2 canali con uscite a relè (contatti NO)
 - Modulo Bluetooth integrato (ESP32)
 - Alimentazione 12V
 
