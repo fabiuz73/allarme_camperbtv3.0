@@ -1,16 +1,40 @@
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7789.h>
+// ================================
+// SELEZIONE SCHEDA ESP32
+// ================================
+#define BOARD_DISPLAY     // Per ESP32 con display
+// #define BOARD_USB_C    // Per ESP32 USB C NodeMCU (CP2102) senza display
+
+// Include librerie comuni
 #include "BluetoothSerial.h"
 #include <Wire.h>
 #include <MPU6050.h>
 
-// Pin Display ST7789
+// Include librerie display solo se necessarie
+#ifdef BOARD_DISPLAY
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h>
+#else
+// Definizioni colori per compatibilità quando il display non è presente
+#define ST77XX_BLACK   0x0000
+#define ST77XX_BLUE    0x001F
+#define ST77XX_RED     0xF800
+#define ST77XX_GREEN   0x07E0
+#define ST77XX_CYAN    0x07FF
+#define ST77XX_MAGENTA 0xF81F
+#define ST77XX_YELLOW  0xFFE0
+#define ST77XX_WHITE   0xFFFF
+#endif
+
+#ifdef BOARD_DISPLAY
+// Pin Display ST7789 (solo per board con display)
 #define TFT_CS    15
 #define TFT_DC    2
 #define TFT_RST   4
 #define TFT_BL    32
 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+#endif
+
 BluetoothSerial SerialBT;
 
 // Pin collegamento hardware LED RGB KY-016
@@ -38,8 +62,9 @@ bool centriCalcolati = false;
 // MPU6050
 MPU6050 mpu;
 
-// Funzione per mostrare testo centrato sul display
+// Funzione per mostrare testo centrato sul display (solo per board con display)
 void showMessage(String testo, uint16_t colore = ST77XX_GREEN) {
+#ifdef BOARD_DISPLAY
   tft.fillScreen(ST77XX_BLACK);
   int16_t x1, y1;
   uint16_t w, h;
@@ -50,6 +75,11 @@ void showMessage(String testo, uint16_t colore = ST77XX_GREEN) {
   int y = (tft.height() - h) / 2 - y1;
   tft.setCursor(x, y);
   tft.print(testo);
+#else
+  // Per board senza display: mostra solo su Serial
+  Serial.print("DISPLAY: ");
+  Serial.println(testo);
+#endif
 }
 
 // Funzione per impostare il colore RGB (0=spento, 255=acceso)
@@ -60,13 +90,17 @@ void setLedColor(int r, int g, int b) {
 }
 
 void setup() {
+#ifdef BOARD_DISPLAY
+  // Inizializzazione display (solo per board con display)
   pinMode(TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, HIGH);
 
   tft.init(240, 320);
   tft.setRotation(1);
   tft.fillScreen(ST77XX_BLACK);
+#endif
 
+  // Inizializzazione LED RGB e relè (comune a tutte le board)
   pinMode(ledR, OUTPUT);
   pinMode(ledG, OUTPUT);
   pinMode(ledB, OUTPUT);
@@ -76,13 +110,20 @@ void setup() {
   // MODIFICA: Relè disattivato all'accensione (HIGH su modulo attivo LOW)
   digitalWrite(releClacson, HIGH);
 
+  // Inizializzazione comunicazione seriale e Bluetooth
   Serial.begin(115200);
   SerialBT.begin("ESP32-CAMPER");
   SerialBT.println("Allarme pronto!");
 
+#ifdef BOARD_DISPLAY
+  Serial.println("Board: ESP32 con display ST7789");
+#else
+  Serial.println("Board: ESP32 USB C NodeMCU senza display");
+#endif
+
   showMessage("ALLARME CAMPER", ST77XX_GREEN);
 
-  // MPU6050 INIT
+  // MPU6050 INIT (comune a tutte le board)
   Wire.begin();
   mpu.initialize();
   if (!mpu.testConnection()) {
